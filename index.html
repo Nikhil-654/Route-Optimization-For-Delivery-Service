@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Route Optimization for Delivery Services</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #1E88E5;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    #controls {
+      background-color: #ffffff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin: 20px;
+      border-radius: 8px;
+    }
+    #controls h3 {
+      font-size: 24px;
+      color: #333;
+    }
+    #addresses {
+      width: 100%;
+      height: 120px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+    }
+    #controls button {
+      background-color: #28a745;
+      color: white;
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #controls button:hover {
+      background-color: #218838;
+    }
+    #map {
+      height: 60vh;
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    footer {
+      background-color: #333;
+      color: white;
+      padding: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Route Optimization for Delivery Services</h1>
+    <p>Enter your delivery addresses to find the most optimized route!</p>
+  </header>
+
+  <div id="controls">
+    <h3>Enter Delivery Addresses</h3>
+    <textarea id="addresses" placeholder="Enter one address per line..."></textarea><br><br>
+    <button onclick="optimizeRoute()">Optimize Route</button>
+  </div>
+
+  <div id="map"></div>
+
+  <footer>
+    <p>&copy; 2025 Route Optimization. All rights reserved.</p>
+  </footer>
+
+  <script>
+    let map;
+    let directionsService;
+    let directionsRenderer;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 29.7466, lng: 78.5319 }, // Default to Kotdwara
+        zoom: 12,
+      });
+      directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer({ map: map });
+    }
+
+    function optimizeRoute() {
+      const input = document.getElementById("addresses").value.trim();
+      const lines = input.split("\n").map(line => line.trim()).filter(line => line.length > 0);
+
+      if (lines.length < 2) {
+        alert("Please enter at least two addresses.");
+        return;
+      }
+
+      const origin = lines[0];
+      const destination = lines[lines.length - 1];
+      const waypoints = lines.slice(1, lines.length - 1).map(address => ({ location: address, stopover: true }));
+
+      directionsService.route({
+        origin: origin,
+        destination: destination,
+        waypoints: waypoints,
+        optimizeWaypoints: true,
+        travelMode: google.maps.TravelMode.DRIVING,
+      }, (response, status) => {
+        if (status === "OK") {
+          directionsRenderer.setDirections(response);
+        } else {
+          alert("Directions request failed: " + status);
+        }
+      });
+    }
+  </script>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap" async defer></script>
+</body>
+</html>
