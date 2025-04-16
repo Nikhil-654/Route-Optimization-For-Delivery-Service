@@ -38,17 +38,16 @@
       margin-bottom: 10px;
     }
     #controls button {
-      background-color: #28a745;
-      color: white;
-      padding: 10px 20px;
-      font-size: 18px;
+      padding: 10px 16px;
+      font-size: 16px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin: 5px 5px 0 0;
       transition: background-color 0.3s ease;
     }
     #controls button:hover {
-      background-color: #218838;
+      opacity: 0.9;
     }
     #map {
       height: 60vh;
@@ -74,7 +73,12 @@
   <div id="controls">
     <h3>Enter Delivery Addresses</h3>
     <textarea id="addresses" placeholder="Enter one address per line..."></textarea><br><br>
-    <button onclick="optimizeRoute()">Optimize Route</button>
+
+    <button onclick="optimizeRoute()" style="background-color: #28a745; color: white;">Optimize Route</button>
+    <button onclick="resetMap()" style="background-color: #dc3545; color: white;">Reset</button>
+    <button onclick="loadSample()" style="background-color: #17a2b8; color: white;">Load Sample</button>
+    <button onclick="exportRoute()" style="background-color: #6f42c1; color: white;">Export List</button>
+    <button onclick="toggleMap()" style="background-color: #ffc107; color: black;">Toggle Map</button>
   </div>
 
   <div id="map"></div>
@@ -87,10 +91,11 @@
     let map;
     let directionsService;
     let directionsRenderer;
+    let mapVisible = true;
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 29.7466, lng: 78.5319 }, // Default to Kotdwara
+        center: { lat: 29.7466, lng: 78.5319 },
         zoom: 12,
       });
       directionsService = new google.maps.DirectionsService();
@@ -119,10 +124,45 @@
       }, (response, status) => {
         if (status === "OK") {
           directionsRenderer.setDirections(response);
+          const order = response.routes[0].waypoint_order;
+          alert("Optimized stop order:\n" + order.map(i => lines[i + 1]).join("\n"));
         } else {
           alert("Directions request failed: " + status);
         }
       });
+    }
+
+    function resetMap() {
+      document.getElementById("addresses").value = "";
+      directionsRenderer.setDirections({ routes: [] });
+    }
+
+    function loadSample() {
+      document.getElementById("addresses").value = `Kotdwara Bus Stand
+Govind Nagar
+Bhairav Garhi
+Kashipur Road
+SIDCUL Haridwar`;
+    }
+
+    function exportRoute() {
+      const input = document.getElementById("addresses").value.trim();
+      const lines = input.split("\n").map(line => line.trim()).filter(line => line.length > 0);
+      if (lines.length === 0) {
+        alert("Nothing to export.");
+        return;
+      }
+      const blob = new Blob([lines.join("\n")], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = "optimized-route.txt";
+      a.click();
+    }
+
+    function toggleMap() {
+      const mapDiv = document.getElementById("map");
+      mapVisible = !mapVisible;
+      mapDiv.style.display = mapVisible ? "block" : "none";
     }
   </script>
 
